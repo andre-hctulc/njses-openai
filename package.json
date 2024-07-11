@@ -1,0 +1,16 @@
+{
+    "name": "@andre-hctulc/njses-openai",
+    "version": "0.0.1",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "tc": "tsc --noEmit",
+        "build": "tsc",
+        "watch": "tsc -w"
+    },
+    "author": "André Thomas",
+    "license": "ISC",
+    "dependencies": {
+        "openai": "^4.52.5"
+    }
+}
