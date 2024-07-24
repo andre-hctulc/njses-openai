@@ -11,6 +11,6 @@
     "author": "André Thomas",
     "license": "ISC",
     "dependencies": {
-        "openai": "^4.52.5"
+        "openai": "^4.52.7"
     }
 }

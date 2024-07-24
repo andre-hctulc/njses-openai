@@ -1,28 +1,21 @@
-import { Service } from "@backend/packages/njses";
 import OpenAI from "openai";
+import { Service } from "../../njses/src/decorators";
 
-export interface OpenAIAssistantOptions {
+export interface OAIAssistantOptions {
     /** Used for all operations */
     requestOptions?: OpenAI.RequestOptions;
 }
 
-@Service({ name: "OpenAIAssistant" })
-export class OpenAIAssistant {
+@Service({ name: "$$openai_assistant" })
+export class OAIAssistant {
     readonly id: string;
 
-    constructor(assistantId: string, readonly client: OpenAI, private options: OpenAIAssistantOptions = {}) {
+    constructor(readonly client: OpenAI, assistantId: string, private options: OAIAssistantOptions = {}) {
         this.id = assistantId;
     }
 
-    // private assitant!: OpenAI.Beta.Assistants.Assistant;
-
-    // @Init
-    // private async init() {
-    //     this.assitant = await this.client.beta.assistants.retrieve(this.id, this.options.requestOptions);
-    // }
-
-    createThread() {
-        return this.client.beta.threads.create(this.options.requestOptions);
+    async describe() {
+        return this.client.beta.assistants.retrieve(this.id, this.options.requestOptions);
     }
 
     createRun(threadId: string) {

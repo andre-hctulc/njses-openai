@@ -1,7 +1,7 @@
-import { Service } from "@backend/packages/njses/src/decorators";
 import OpenAI from "openai";
-import type { Uploadable } from "openai/uploads.mjs";
 import { NodeBlob } from "./blob";
+import type { Uploadable } from "openai/uploads";
+import { Service } from "../../njses/src/decorators";
 
 export interface OpenAIVectorStoreOptions {
     /** Used for all operations */
@@ -10,22 +10,21 @@ export interface OpenAIVectorStoreOptions {
 
 type FriendlyUploadable = Uploadable | string | NodeBlob;
 
-@Service({ name: "OpenAIVectorStore" })
-export class OpenAIVectorStore {
+@Service({ name: "$$openai_vector_store" })
+export class OAIVectorStore {
     readonly id: string;
 
     constructor(
-        vectorStoreId: string,
         readonly client: OpenAI,
+        vectorStoreId: string,
         private options: OpenAIVectorStoreOptions = {}
     ) {
         this.id = vectorStoreId;
     }
 
-    // @Init
-    // private async init() {
-    //     //const vs = await this.client.beta.vectorStores.retrieve(this.id, this.options.requestOptions);
-    // }
+    async describe() {
+        return this.client.beta.vectorStores.retrieve(this.id, this.options.requestOptions);
+    }
 
     // TODO do we really want to poll all the time?
 

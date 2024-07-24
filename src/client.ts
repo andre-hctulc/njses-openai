@@ -1,37 +1,48 @@
-import { Service, ServiceRegistery } from "@backend/packages/njses";
+import { Service, ServiceRegistery } from "../../njses";
 import OpenAI, { ClientOptions } from "openai";
 import { FriendlyUploadable } from "./types";
 import { parseFile } from "./system";
-import { OpenAIAssistant, OpenAIAssistantOptions } from "./assistant";
-import { OpenAIVectorStore, OpenAIVectorStoreOptions } from "./vector-store";
+import { OAIAssistant, OAIAssistantOptions } from "./assistant";
+import { OAIVectorStore, OpenAIVectorStoreOptions } from "./vector-store";
+import type { EmbeddingCreateParams } from "openai/resources";
 
-interface OpenAIClientConfig extends ClientOptions {
+interface OAIClientConfig extends ClientOptions {
     requestOptions?: OpenAI.RequestOptions;
 }
 
-@Service({ name: "OpenAIClient" })
-export class OpenAIClient {
-    readonly client: OpenAI;
+@Service({ name: "$$openai" })
+export class OAIClient {
+    readonly oai: OpenAI;
 
-    constructor(private config: OpenAIClientConfig) {
-        this.client = new OpenAI(config);
+    constructor(private config: OAIClientConfig) {
+        this.oai = new OpenAI(config);
     }
 
     // -- assistants
 
     async createAssistant(
         config: OpenAI.Beta.Assistants.AssistantCreateParams,
-        options: OpenAIAssistantOptions = {}
-    ): Promise<OpenAIAssistant> {
-        const assistant = await this.client.beta.assistants.create(config, this.config.requestOptions);
-        return ServiceRegistery.create(OpenAIAssistant, assistant.id, this.client, {
+        options: OAIAssistantOptions = {}
+    ): Promise<OAIAssistant> {
+        const assistant = await this.oai.beta.assistants.create(config, this.config.requestOptions);
+        return new OAIAssistant(this.oai, assistant.id, {
             requestOptions: this.config.requestOptions,
             ...options,
         });
     }
 
     deleteAssistant(assitantId: string) {
-        return this.client.beta.assistants.del(assitantId, this.config.requestOptions);
+        return this.oai.beta.assistants.del(assitantId, this.config.requestOptions);
+    }
+
+    /**
+     * Mounts the given assistant
+     */
+    async getAssistant(assistantId: string, options: OAIAssistantOptions = {}): Promise<OAIAssistant> {
+        return ServiceRegistery.mount(OAIAssistant, this.oai, assistantId, {
+            requestOptions: this.config.requestOptions,
+            ...options,
+        });
     }
 
     // -- vector stores
@@ -39,33 +50,60 @@ export class OpenAIClient {
     async createVectorStore(
         config: OpenAI.Beta.VectorStores.VectorStoreCreateParams,
         options: OpenAIVectorStoreOptions = {}
-    ): Promise<OpenAIVectorStore> {
-        const store = await this.client.beta.vectorStores.create(config, this.config.requestOptions);
-        return ServiceRegistery.create(OpenAIVectorStore, store.id, this.client, {
+    ): Promise<OAIVectorStore> {
+        const store = await this.oai.beta.vectorStores.create(config, this.config.requestOptions);
+        return new OAIVectorStore(this.oai, store.id, {
             requestOptions: this.config.requestOptions,
             ...options,
         });
     }
 
     deleteVectorStore(storeId: string) {
-        return this.client.beta.vectorStores.del(storeId, this.config.requestOptions);
+        return this.oai.beta.vectorStores.del(storeId, this.config.requestOptions);
+    }
+
+    getVectorStore(storeId: string, options: OpenAIVectorStoreOptions = {}): OAIVectorStore {
+        return new OAIVectorStore(this.oai, storeId, {
+            requestOptions: this.config.requestOptions,
+            ...options,
+        });
     }
 
     // -- files
 
-    createFile(file: FriendlyUploadable, purpose: "assistants" | "batch" | "fine-tune" | "vision") {
-        return this.client.files.create({ file: parseFile(file), purpose }, this.config.requestOptions);
+    uploadFile(file: FriendlyUploadable, purpose: "assistants" | "batch" | "fine-tune" | "vision") {
+        return this.oai.files.create({ file: parseFile(file), purpose }, this.config.requestOptions);
     }
 
     deleteFile(fileId: string) {
-        return this.client.files.del(fileId, this.config.requestOptions);
+        return this.oai.files.del(fileId, this.config.requestOptions);
     }
 
     loadFile(fileId: string) {
-        return this.client.files.retrieve(fileId, this.config.requestOptions);
+        return this.oai.files.retrieve(fileId, this.config.requestOptions);
+    }
+
+    loadFileContent(fileId: string): Promise<Response> {
+        return this.oai.files.content(fileId, this.config.requestOptions);
     }
 
     listFiles(query?: OpenAI.Files.FileListParams) {
-        return this.client.files.list(query, this.config.requestOptions);
+        return this.oai.files.list(query, this.config.requestOptions);
+    }
+
+    // -- embeddings
+
+    async embedd(params: EmbeddingCreateParams) {
+        await this.oai.embeddings.create(params, this.config.requestOptions);
+    }
+
+    async complete(params: OpenAI.Completions.CompletionCreateParamsNonStreaming) {
+        return this.oai.completions.create(params, this.config.requestOptions);
+    }
+
+    // -- threads
+
+    createThread() {
+        return this.oai.beta.threads.create(this.config.requestOptions);
     }
 }

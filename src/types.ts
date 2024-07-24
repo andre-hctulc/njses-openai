@@ -1,4 +1,3 @@
-import type { Uploadable } from "openai/uploads.mjs";
-import type { NodeBlob } from "./blob";
+import type { Uploadable } from "openai/uploads";
 
-export type FriendlyUploadable = Uploadable | string | NodeBlob;
+export type FriendlyUploadable = Uploadable | string | Blob;
