@@ -1,4 +1,4 @@
-import { Service, ServiceRegistery } from "../../njses";
+import { Service, Registery } from "../../njses";
 import OpenAI, { ClientOptions } from "openai";
 import { FriendlyUploadable } from "./types";
 import { parseFile } from "./system";
@@ -35,11 +35,15 @@ export class OAIClient {
         return this.oai.beta.assistants.del(assitantId, this.config.requestOptions);
     }
 
+    updateAssistant(assistantId: string, data: OpenAI.Beta.Assistants.AssistantUpdateParams) {
+        return this.oai.beta.assistants.update(assistantId, data, this.config.requestOptions);
+    }
+
     /**
      * Mounts the given assistant
      */
     async getAssistant(assistantId: string, options: OAIAssistantOptions = {}): Promise<OAIAssistant> {
-        return ServiceRegistery.mount(OAIAssistant, this.oai, assistantId, {
+        return Registery.mount(OAIAssistant, this.oai, assistantId, {
             requestOptions: this.config.requestOptions,
             ...options,
         });
