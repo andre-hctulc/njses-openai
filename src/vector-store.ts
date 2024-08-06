@@ -1,7 +1,7 @@
 import OpenAI from "openai";
 import { NodeBlob } from "./blob";
 import type { Uploadable } from "openai/uploads";
-import { Service } from "../../njses/src/decorators";
+import { Service } from "../../njses";
 
 export interface OpenAIVectorStoreOptions {
     /** Used for all operations */

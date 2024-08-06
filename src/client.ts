@@ -1,9 +1,10 @@
-import { Service, Registery } from "../../njses";
+import { Service, App } from "../../njses";
 import OpenAI, { ClientOptions } from "openai";
 import { FriendlyUploadable } from "./types";
 import { parseFile } from "./system";
 import { OAIAssistant, OAIAssistantOptions } from "./assistant";
 import { OAIVectorStore, OpenAIVectorStoreOptions } from "./vector-store";
+// @ts-ignore
 import type { EmbeddingCreateParams } from "openai/resources";
 
 interface OAIClientConfig extends ClientOptions {
@@ -43,10 +44,15 @@ export class OAIClient {
      * Mounts the given assistant
      */
     async getAssistant(assistantId: string, options: OAIAssistantOptions = {}): Promise<OAIAssistant> {
-        return Registery.mount(OAIAssistant, this.oai, assistantId, {
-            requestOptions: this.config.requestOptions,
-            ...options,
-        });
+        return App.injectX([
+            OAIAssistant,
+            this.oai,
+            assistantId,
+            {
+                requestOptions: this.config.requestOptions,
+                ...options,
+            },
+        ]);
     }
 
     // -- vector stores
@@ -98,7 +104,7 @@ export class OAIClient {
     // -- embeddings
 
     async embedd(params: EmbeddingCreateParams) {
-        await this.oai.embeddings.create(params, this.config.requestOptions);
+        return this.oai.embeddings.create(params, this.config.requestOptions);
     }
 
     async complete(params: OpenAI.Completions.CompletionCreateParamsNonStreaming) {

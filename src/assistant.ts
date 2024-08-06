@@ -1,5 +1,5 @@
 import OpenAI from "openai";
-import { Service } from "../../njses/src/decorators";
+import { Service } from "../../njses";
 
 export interface OAIAssistantOptions {
     /** Used for all operations */
